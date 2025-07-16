@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "start": "webpack serve --mode development"
+    "start": "webpack serve --mode development",
+    "vercel-build": "webpack --mode production"
   },
   "keywords": [
     "kontent-ai",
