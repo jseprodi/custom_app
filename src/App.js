@@ -44,13 +44,18 @@ const App = ({ sdk }) => {
           const subscriptionApiKey = config.KONTENT_SUBSCRIPTION_API_KEY;
           const subscriptionId = config.KONTENT_SUBSCRIPTION_ID;
           
-          // Initialize service even without API keys for demo mode
-                      await kontentService.initialize(
+          // Initialize service with proper error handling
+          try {
+            await kontentService.initialize(
               config.KONTENT_ENVIRONMENT_ID, 
               managementApiKey || 'demo-key', 
               subscriptionApiKey,
               subscriptionId
             );
+          } catch (authError) {
+            console.warn('Authentication failed, running in demo mode:', authError.message);
+            // Continue with demo mode
+          }
           
           // Get project information
           try {

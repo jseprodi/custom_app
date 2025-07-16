@@ -47,11 +47,26 @@ class KontentService {
           environmentId: environmentId,
           apiKey: managementApiKey
         });
-        console.log('Management client initialized successfully');
+        
+        // Test the connection with a simple API call
+        try {
+          await this.managementClient.listContentItems()
+            .withLimit(1)
+            .toPromise();
+          console.log('Management client initialized and authenticated successfully');
+        } catch (authError) {
+          console.error('Authentication failed:', authError);
+          if (authError.response?.status === 401) {
+            console.error('Invalid API key or insufficient permissions');
+            throw new Error('Authentication failed: Invalid API key or insufficient permissions');
+          }
+          throw authError;
+        }
       } catch (error) {
         console.error('Failed to initialize Management client:', error);
         // Fall back to demo mode
         console.log('Falling back to demo mode due to client initialization error');
+        this.managementClient = null;
       }
     }
   }
