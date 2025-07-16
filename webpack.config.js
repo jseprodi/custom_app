@@ -95,6 +95,11 @@ module.exports = {
     port: 3000,
     hot: true,
     open: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'X-Frame-Options': 'ALLOWALL',
+      'Content-Security-Policy': "frame-ancestors *"
+    }
   },
   mode: 'development',
 }; 
