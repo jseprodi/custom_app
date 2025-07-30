@@ -25,6 +25,8 @@ const ContentAssignment = ({ sdk }) => {
   const [assignmentDate, setAssignmentDate] = useState('');
   const [assignmentNotes, setAssignmentNotes] = useState('');
   const [error, setError] = useState(null);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,6 +42,43 @@ const ContentAssignment = ({ sdk }) => {
 
         setContentItems(contentData);
         setUsers(usersData);
+
+        // Debug: Get available languages
+        try {
+          const languages = await kontentService.getLanguages();
+          console.log('Available languages in environment:', languages);
+          
+          const defaultLanguage = await kontentService.getDefaultLanguageCodename();
+          console.log('Using default language:', defaultLanguage);
+        } catch (langError) {
+          console.warn('Could not fetch languages:', langError);
+        }
+
+        // Load existing assignments for all content items
+        if (contentData.length > 0) {
+          const itemIds = contentData.map(item => item.id);
+          const assignmentResults = await kontentService.getBulkContentAssignments(itemIds);
+          
+          // Update content items with assignment information
+          setContentItems(prev => prev.map(item => {
+            const assignmentResult = assignmentResults.find(r => r.itemId === item.id);
+            if (assignmentResult?.success && assignmentResult.data.contributors.length > 0) {
+              // Find the assigned user from our users list
+              const assignedUser = usersData.find(u => 
+                assignmentResult.data.contributors.some(c => c.id === u.id)
+              );
+              
+              return {
+                ...item,
+                assignedTo: assignedUser ? `${assignedUser.firstName} ${assignedUser.lastName}` : 'Unknown User',
+                assignmentContributors: assignmentResult.data.contributors,
+                hasAssignment: true
+              };
+            }
+            return item;
+          }));
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.error('Failed to load content data:', error);
@@ -86,47 +125,129 @@ const ContentAssignment = ({ sdk }) => {
     try {
       setError(null);
       
-      // Get the selected user's name for the assignment
+      // Get the selected user's data for the assignment
       const selectedUserData = users.find(u => u.id === selectedUser);
-      const assigneeName = selectedUserData ? `${selectedUserData.firstName} ${selectedUserData.lastName}` : 'Unknown';
-
-      // Update all selected content items using bulk update
-      const updateResults = await kontentService.bulkUpdateContentItems(selectedContent, {
-        assignedTo: assigneeName,
-        // You could also update other fields like priority, status, etc.
-      });
-
-      // Check if all updates were successful
-      const failedUpdates = updateResults.filter(result => !result.success);
-      if (failedUpdates.length > 0) {
-        console.warn('Some content items failed to update:', failedUpdates);
+      if (!selectedUserData) {
+        throw new Error('Selected user not found');
       }
 
-      // Update local state
-      setContentItems(prev => prev.map(item => 
-        selectedContent.includes(item.id) 
-          ? { ...item, assignedTo: assigneeName }
-          : item
-      ));
+      // Prepare assignment options
+      const assignmentOptions = {
+        role: 'contributor', // Default role
+        notes: assignmentNotes || undefined,
+        dueDate: assignmentDate || undefined
+      };
 
+      // Use the new bulk assignment method that properly handles contributor assignments
+      const updateResults = await kontentService.bulkAssignContentToUser(
+        selectedContent, 
+        selectedUser, 
+        null, // Let the service determine the correct language
+        assignmentOptions
+      );
+
+      // Check results and provide appropriate feedback
+      const successfulAssignments = updateResults.filter(result => result.success);
+      const failedAssignments = updateResults.filter(result => !result.success);
+
+      // Update local state for successful assignments
+      setContentItems(prev => prev.map(item => {
+        const wasAssigned = selectedContent.includes(item.id);
+        if (wasAssigned) {
+          const assignmentResult = updateResults.find(r => r.itemId === item.id);
+          if (assignmentResult?.success) {
+            return { 
+              ...item, 
+              assignedTo: `${selectedUserData.firstName} ${selectedUserData.lastName}`,
+              assignmentDate: assignmentDate || new Date().toISOString().split('T')[0],
+              assignmentNotes: assignmentNotes || null
+            };
+          }
+        }
+        return item;
+      }));
+
+      // Reset form
       setSelectedContent([]);
       setSelectedUser('');
       setShowAssignmentModal(false);
       setAssignmentDate('');
       setAssignmentNotes('');
 
-      // Show success message
-      const successCount = updateResults.filter(result => result.success).length;
+      // Show success/error message
+      const successCount = successfulAssignments.length;
       const totalCount = selectedContent.length;
+      const assigneeName = `${selectedUserData.firstName} ${selectedUserData.lastName}`;
       
       if (successCount === totalCount) {
         alert(`Successfully assigned ${totalCount} content items to ${assigneeName}!`);
+      } else if (successCount > 0) {
+        const errorDetails = failedAssignments.map(f => f.error).join(', ');
+        alert(`Assigned ${successCount} out of ${totalCount} content items to ${assigneeName}. Some items failed: ${errorDetails}`);
       } else {
-        alert(`Assigned ${successCount} out of ${totalCount} content items to ${assigneeName}. Some items failed to update.`);
+        const errorDetails = failedAssignments.map(f => f.error).join(', ');
+        alert(`Assignment failed for all items: ${errorDetails}`);
       }
     } catch (error) {
       console.error('Failed to assign content:', error);
-      setError('Failed to assign content. Please try again.');
+      setError(`Failed to assign content: ${error.message}`);
+    }
+  };
+
+  const handleRemoveAssignment = (item) => {
+    setItemToRemove(item);
+    setShowRemoveModal(true);
+  };
+
+  const handleConfirmRemoveAssignment = async () => {
+    if (!itemToRemove || !itemToRemove.assignmentContributors) {
+      setShowRemoveModal(false);
+      setItemToRemove(null);
+      return;
+    }
+
+    try {
+      setError(null);
+      
+      // Remove all contributors for this item
+      const removeResults = [];
+      for (const contributor of itemToRemove.assignmentContributors) {
+        try {
+          const result = await kontentService.removeContentAssignment(
+            itemToRemove.id, 
+            contributor.id, 
+            null // Let the service determine the correct language
+          );
+          removeResults.push({ contributorId: contributor.id, success: true, data: result });
+        } catch (error) {
+          removeResults.push({ contributorId: contributor.id, success: false, error: error.message });
+        }
+      }
+
+      // Update local state
+      setContentItems(prev => prev.map(item => 
+        item.id === itemToRemove.id 
+          ? { ...item, assignedTo: null, assignmentContributors: [], hasAssignment: false }
+          : item
+      ));
+
+      setShowRemoveModal(false);
+      setItemToRemove(null);
+
+      // Show result
+      const successCount = removeResults.filter(r => r.success).length;
+      const totalCount = removeResults.length;
+      
+      if (successCount === totalCount) {
+        alert(`Successfully removed all assignments for "${itemToRemove.name}"!`);
+      } else if (successCount > 0) {
+        alert(`Removed ${successCount} out of ${totalCount} assignments for "${itemToRemove.name}". Some removals failed.`);
+      } else {
+        alert(`Failed to remove assignments for "${itemToRemove.name}".`);
+      }
+    } catch (error) {
+      console.error('Failed to remove assignment:', error);
+      setError(`Failed to remove assignment: ${error.message}`);
     }
   };
 
@@ -186,7 +307,7 @@ const ContentAssignment = ({ sdk }) => {
           <div>
             <h2 className="card-title">Content Assignment</h2>
             <p style={{ margin: '8px 0 0 0', color: 'var(--text-secondary)' }}>
-              Assign content items to creators in bulk (Using demo user data)
+              Assign content items to creators using Kontent.ai language variants and contributor system. Assignments are stored in the content item's language variant.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '12px' }}>
@@ -197,6 +318,128 @@ const ContentAssignment = ({ sdk }) => {
             >
               <UserCheck size={16} />
               Assign Selected ({selectedContent.length})
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={async () => {
+                try {
+                  console.log('Running language detection debug...');
+                  const result = await kontentService.debugLanguageDetection();
+                  console.log('Debug result:', result);
+                  if (result.success) {
+                    alert(`Language detection debug completed successfully!\n\nAvailable languages: ${result.languages.length}\nDefault language: ${result.defaultLanguage}\nContent items: ${result.contentItemsCount}\n\nCheck console for detailed information.`);
+                  } else {
+                    alert(`Language detection debug failed: ${result.error}`);
+                  }
+                } catch (error) {
+                  console.error('Debug failed:', error);
+                  alert(`Debug failed: ${error.message}`);
+                }
+              }}
+            >
+              Debug Languages
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={async () => {
+                try {
+                  console.log('Testing language codenames...');
+                  const result = await kontentService.testLanguageCodenames();
+                  console.log('Language codename test result:', result);
+                  if (result.success) {
+                    const workingCount = result.workingLanguages.length;
+                    const recommended = result.recommendedLanguage;
+                    alert(`Language codename test completed!\n\nWorking languages: ${workingCount}\nRecommended: ${recommended || 'None found'}\n\nWorking codenames: ${result.workingLanguages.join(', ')}\n\nCheck console for detailed results.`);
+                    
+                    if (recommended) {
+                      // Automatically set the recommended language
+                      kontentService.setDefaultLanguageCodename(recommended);
+                      console.log(`Automatically set language codename to: ${recommended}`);
+                    }
+                  } else {
+                    alert(`Language codename test failed: ${result.error}`);
+                  }
+                } catch (error) {
+                  console.error('Language codename test failed:', error);
+                  alert(`Language codename test failed: ${error.message}`);
+                }
+              }}
+            >
+              Test Language Codenames
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={async () => {
+                try {
+                  console.log('Testing SDK response structure...');
+                  const result = await kontentService.testSdkResponseStructure();
+                  console.log('SDK response structure test result:', result);
+                  if (result.success) {
+                    alert(`SDK response structure test completed!\n\nCheck console for detailed response structure information.`);
+                  } else {
+                    alert(`SDK response structure test failed: ${result.error}`);
+                  }
+                } catch (error) {
+                  console.error('SDK response structure test failed:', error);
+                  alert(`SDK response structure test failed: ${error.message}`);
+                }
+              }}
+            >
+              Test SDK Response
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={async () => {
+                try {
+                  console.log('Testing upsert data structures...');
+                  const contentItems = await kontentService.getContentItems();
+                  if (contentItems.length > 0) {
+                    const testItem = contentItems[0];
+                    const result = await kontentService.testUpsertDataStructures(testItem.id, 'default');
+                    console.log('Upsert data structure test result:', result);
+                    if (result.success) {
+                      const successfulCount = result.successfulTests.length;
+                      alert(`Upsert data structure test completed!\n\nSuccessful tests: ${successfulCount}\nSuccessful formats: ${result.successfulTests.join(', ')}\n\nCheck console for detailed results.`);
+                    } else {
+                      alert(`Upsert data structure test failed: ${result.error}`);
+                    }
+                  } else {
+                    alert('No content items available for testing');
+                  }
+                } catch (error) {
+                  console.error('Upsert data structure test failed:', error);
+                  alert(`Upsert data structure test failed: ${error.message}`);
+                }
+              }}
+            >
+              Test Upsert Data
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={async () => {
+                try {
+                  console.log('Testing raw API upsert...');
+                  const contentItems = await kontentService.getContentItems();
+                  if (contentItems.length > 0) {
+                    const testItem = contentItems[0];
+                    const result = await kontentService.testRawApiUpsert(testItem.id, 'default');
+                    console.log('Raw API upsert test result:', result);
+                    if (result.success) {
+                      const successfulCount = result.successfulTests.length;
+                      alert(`Raw API upsert test completed!\n\nSuccessful tests: ${successfulCount}\nSuccessful formats: ${result.successfulTests.join(', ')}\n\nCheck console for detailed results.`);
+                    } else {
+                      alert(`Raw API upsert test failed: ${result.error}`);
+                    }
+                  } else {
+                    alert('No content items available for testing');
+                  }
+                } catch (error) {
+                  console.error('Raw API upsert test failed:', error);
+                  alert(`Raw API upsert test failed: ${error.message}`);
+                }
+              }}
+            >
+              Test Raw API
             </button>
           </div>
         </div>
@@ -297,6 +540,7 @@ const ContentAssignment = ({ sdk }) => {
                 <th>Created</th>
                 <th>Last Modified</th>
                 <th>Assigned To</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -327,9 +571,34 @@ const ContentAssignment = ({ sdk }) => {
                   <td>{item.lastModified.toLocaleDateString()}</td>
                   <td>
                     {item.assignedTo ? (
-                      <span className="badge badge-success">Assigned</span>
+                      <div>
+                        <span className="badge badge-success">Assigned</span>
+                        <div style={{ fontSize: '12px', marginTop: '4px', color: 'var(--text-secondary)' }}>
+                          {item.assignedTo}
+                        </div>
+                        {item.assignmentContributors && item.assignmentContributors.length > 0 && (
+                          <div style={{ fontSize: '11px', marginTop: '2px' }}>
+                            {item.assignmentContributors.map(contributor => (
+                              <span key={contributor.id} className="badge badge-info" style={{ marginRight: '4px' }}>
+                                {contributor.role}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <span className="badge badge-info">Unassigned</span>
+                    )}
+                  </td>
+                  <td>
+                    {item.assignedTo && (
+                      <button 
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleRemoveAssignment(item)}
+                        title="Remove Assignment"
+                      >
+                        <X size={14} />
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -423,6 +692,41 @@ const ContentAssignment = ({ sdk }) => {
               >
                 <Check size={16} />
                 Confirm Assignment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Assignment Modal */}
+      {showRemoveModal && (
+        <div className="modal-overlay" onClick={() => setShowRemoveModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Remove Assignment</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowRemoveModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to remove all assignments for "{itemToRemove?.name}"? This action cannot be undone.</p>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowRemoveModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-danger"
+                onClick={handleConfirmRemoveAssignment}
+              >
+                <X size={16} />
+                Remove Assignments
               </button>
             </div>
           </div>

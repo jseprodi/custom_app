@@ -18,7 +18,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors *; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.kontent.ai https://*.kenticocloud.com;"
+          "value": "frame-ancestors *"
         },
         {
           "key": "Access-Control-Allow-Origin",
@@ -38,10 +38,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "api/**/*.js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 } 

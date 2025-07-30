@@ -1,325 +1,114 @@
-# Kontent.ai Content Management Dashboard
+# Kontent.ai Custom App Dashboard
 
-A comprehensive custom app for Kontent.ai that provides a management dashboard for content assignment, user management, and analytics. This dashboard allows editors to assign pieces of content to content creators in bulk and provides useful features for content management.
+A React-based dashboard application designed to work as a custom app within the Kontent.ai platform. This app provides content management, user management, and analytics features using the official Kontent.ai APIs.
 
 ## Features
 
-### 🎯 Core Features
+- **Content Management** - View and manage content items using the Management API
+- **User Management** - Manage users using the Subscription API
+- **Analytics** - View content analytics and performance metrics
+- **API Key Management** - Secure input of API keys through modal interface
+- **Real-time Integration** - Works with live Kontent.ai data
 
-- **Bulk Content Assignment**: Select multiple content items and assign them to creators in bulk
-- **User Management**: Manage content creators, their roles, and performance tracking
-- **Content Overview**: Comprehensive view of all content with filtering and sorting
-- **Analytics Dashboard**: Performance metrics, trends, and insights
-- **Real-time Updates**: Live data synchronization with Kontent.ai
+## Architecture
 
-### 📊 Dashboard Sections
+### SDK Implementation
+The app uses a custom SDK implementation that:
+- Communicates with the parent Kontent.ai window when embedded as an iframe
+- Requires proper Kontent.ai environment for full functionality
+- Handles iframe messaging for context and configuration retrieval
 
-1. **Dashboard**: Overview with key metrics and recent activity
-2. **Content Assignment**: Bulk assignment interface with filtering and search
-3. **Content Overview**: Detailed content management with status tracking
-4. **User Management**: Creator profiles, performance metrics, and role management
-5. **Analytics**: Performance insights, trends, and reporting
+### API Integration
+- **Management API** - For all content-related operations
+- **Subscription API** - For user management operations
+- **Custom App SDK** - For context and configuration
 
-### 🎨 User Interface
-
-- Modern, responsive design that matches Kontent.ai's design system
-- Intuitive navigation with tab-based interface
-- Real-time search and filtering capabilities
-- Modal dialogs for detailed operations
-- Status badges and priority indicators
-- Performance charts and visualizations
-
-## Technology Stack
-
-- **Frontend**: React 18 with modern hooks
-- **Styling**: CSS with CSS variables for theming
-- **Icons**: Lucide React for consistent iconography
-- **Build Tool**: Webpack with Babel for transpilation
-- **SDK**: Kontent.ai Custom App SDK for integration
-- **APIs**: Kontent.ai Management SDK and Subscription API
-
-## API Integration
-
-This dashboard integrates with multiple Kontent.ai APIs:
-
-### Management SDK
-- **Content Management**: Create, read, update, and delete content items
-- **User Management**: Manage users, roles, and permissions
-- **Workflow Management**: Change content item workflow states
-- **Collections**: Organize content by collections
-- **Content Types**: Manage content type definitions
-
-### Subscription API
-- **Project Information**: Get project details and settings
-- **Usage Limits**: Monitor API usage and limits
-- **Plan Features**: Access subscription plan features
-- **Billing Information**: View billing and plan details
-
-### Delivery SDK
-- **Content Retrieval**: Fetch published content for analytics
-- **Content Preview**: Access preview content for management
-- **Localization**: Handle multi-language content
-
-## Getting Started
+## Development
 
 ### Prerequisites
-
-- Node.js (v14 or higher)
-- npm or yarn package manager
-- Kontent.ai account with custom apps enabled
-- Management API access (API key required)
-- Subscription API access (optional, for enhanced features)
+- Node.js 16+
+- npm or yarn
 
 ### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd kontent-dashboard-app
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure API access**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   # Required - Management API key for core functionality
-   REACT_APP_KONTENT_MANAGEMENT_API_KEY=your-management-api-key
-   
-   # Optional - Subscription API key for enhanced features
-   REACT_APP_KONTENT_SUBSCRIPTION_API_KEY=your-subscription-api-key
-   
-   # Optional - Subscription ID for subscription API calls
-   REACT_APP_KONTENT_SUBSCRIPTION_ID=your-subscription-id
-   
-   # Optional - Project and environment IDs
-   REACT_APP_KONTENT_PROJECT_ID=your-project-id
-   REACT_APP_KONTENT_ENVIRONMENT_ID=your-environment-id
-   ```
-
-4. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-5. **Build for production**
-   ```bash
-   npm run build
-   ```
-
-### Development
-
-The development server will start on `http://localhost:3000` with hot reloading enabled.
-
-### Building for Kontent.ai
-
-1. **Build the application**
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy the `dist` folder** to your web hosting service
-
-3. **Configure in Kontent.ai**:
-   - Go to your Kontent.ai project settings
-   - Navigate to Custom Apps
-   - Add a new custom app
-   - Set the URL to your deployed application
-   - Configure permissions as needed
-   - Add your API keys and subscription ID to the custom app configuration
-
-## Project Structure
-
-```
-dashboard-app/
-├── public/
-│   └── index.html          # HTML template
-├── src/
-│   ├── components/         # React components
-│   │   ├── Dashboard.js
-│   │   ├── ContentAssignment.js
-│   │   ├── ContentOverview.js
-│   │   ├── UserManagement.js
-│   │   └── Analytics.js
-│   ├── services/
-│   │   └── kontentService.js  # API integration layer
-│   ├── styles/
-│   │   └── global.css      # Global styles
-│   ├── App.js              # Main app component
-│   └── index.js            # Entry point
-├── package.json            # Dependencies and scripts
-├── webpack.config.js       # Build configuration
-└── README.md              # This file
+```bash
+npm install
 ```
 
-## Key Components
-
-### Content Assignment
-- **Bulk Selection**: Checkbox-based selection of multiple content items
-- **Advanced Filtering**: Filter by status, type, and search terms
-- **Assignment Modal**: Set due dates, notes, and assignee information
-- **Real-time Updates**: Immediate feedback on assignment status
-- **API Integration**: Uses Management SDK for content updates
-
-### User Management
-- **Creator Profiles**: Detailed user information and performance metrics
-- **Role Management**: Assign and manage user roles and permissions
-- **Performance Tracking**: Completion rates and assignment statistics
-- **Contact Integration**: Direct communication with creators
-- **API Integration**: Uses Management SDK for user operations
-
-### Analytics Dashboard
-- **Performance Metrics**: Key performance indicators and trends
-- **Visual Charts**: Monthly trends and content type distribution
-- **Top Performers**: Leaderboard of most productive creators
-- **Insights**: Automated insights and recommendations
-- **API Integration**: Combines Management and Delivery SDKs
-
-## API Configuration
-
-### Required Permissions
-
-Your Management API key needs the following permissions:
-- **Content Management**: Read and write access to content items
-- **User Management**: Read access to users and roles
-- **Project Management**: Read access to project information
-- **Workflow Management**: Read and write access to workflow states
-
-Your Subscription API key needs the following permissions:
-- **Subscription Management**: Read access to subscription information
-- **Billing Information**: Read access to billing details
-- **Usage Monitoring**: Read access to usage statistics
-
-### Environment Variables
-
-```env
-# Required - Management API key for core functionality
-REACT_APP_KONTENT_MANAGEMENT_API_KEY=your-management-api-key
-
-# Optional - Subscription API key for enhanced features
-REACT_APP_KONTENT_SUBSCRIPTION_API_KEY=your-subscription-api-key
-
-# Optional - Subscription ID for subscription API calls
-REACT_APP_KONTENT_SUBSCRIPTION_ID=your-subscription-id
-
-# Optional - Project and environment IDs
-REACT_APP_KONTENT_PROJECT_ID=your-project-id
-REACT_APP_KONTENT_ENVIRONMENT_ID=your-environment-id
+### Running the App
+```bash
+npm start
 ```
 
-### Custom App Configuration
+The app will run at `http://localhost:3000`
 
-In your Kontent.ai custom app settings, add the following JSON configuration:
+### API Keys
+When running the app, you'll need to provide:
+1. **Management API Key** - For content operations
+2. **Subscription API Key** - For user management
+3. **Subscription ID** - For user management
+4. **Environment ID** - Your Kontent.ai environment ID
 
-```json
-{
-  "managementApiKey": "your-management-api-key",
-  "subscriptionApiKey": "your-subscription-api-key",
-  "subscriptionId": "your-subscription-id",
-  "projectId": "your-project-id",
-  "environmentId": "your-environment-id"
-}
-```
+Click the "API Keys" button in the header to configure these.
 
-## Integration with Kontent.ai
+**Note:** This app is designed to run within Kontent.ai as a custom app. For development, you can configure API keys manually, but full functionality requires the Kontent.ai environment.
 
-### SDK Integration
-The app uses multiple Kontent.ai SDKs:
-- **Custom App SDK**: For authentication and context
-- **Management SDK**: For content and user management
-- **Delivery SDK**: For content retrieval and analytics
+## Production Deployment
 
-### API Endpoints
-The service layer integrates with:
-- **Content Management API**: For content operations
-- **Management API**: For user and project management
-- **Delivery API**: For content retrieval
-- **Subscription API**: For project and billing information
+### As a Kontent.ai Custom App
+1. Build the app: `npm run build`
+2. Deploy the `dist` folder to your hosting service
+3. Configure the custom app in Kontent.ai with the deployed URL
+4. The app will automatically detect the Kontent.ai environment and use the real SDK
 
-### Customization
-The app is designed to be easily customizable:
-- Modify the color scheme in `src/styles/global.css`
-- Add new dashboard sections in `src/App.js`
-- Extend functionality in individual components
-- Add new API integrations in `src/services/kontentService.js`
+### Standalone Deployment
+1. Build the app: `npm run build`
+2. Deploy the `dist` folder to your hosting service
+3. Configure API keys through the modal interface
 
-## Configuration
+## SDK Behavior
 
-### Environment Variables
-Create a `.env` file for environment-specific configuration:
-```
-# Required - Management API key for core functionality
-REACT_APP_KONTENT_MANAGEMENT_API_KEY=your-management-api-key
+### In Kontent.ai Environment
+- Detects iframe environment
+- Communicates with parent window
+- Retrieves real context and configuration
+- Uses official APIs with provided credentials
 
-# Optional - Subscription API key for enhanced features
-REACT_APP_KONTENT_SUBSCRIPTION_API_KEY=your-subscription-api-key
+### In Development Environment
+- Returns error indicating app must be embedded in Kontent.ai
+- Requires manual API key configuration for testing
+- Limited functionality without proper Kontent.ai context
 
-# Optional - Subscription ID for subscription API calls
-REACT_APP_KONTENT_SUBSCRIPTION_ID=your-subscription-id
+## API Usage
 
-# Optional - Project and environment IDs
-REACT_APP_KONTENT_PROJECT_ID=your-project-id
-REACT_APP_KONTENT_ENVIRONMENT_ID=your-environment-id
-```
+### Management API
+- Content item retrieval and management
+- Workflow operations
+- Content type and collection management
 
-### Customization Options
-- **Branding**: Update colors and logos in the CSS variables
-- **Permissions**: Configure user roles and access levels
-- **Workflows**: Customize content assignment workflows
-- **Notifications**: Add email or in-app notifications
-- **API Integration**: Extend the service layer for additional APIs
+### Subscription API
+- User management
+- User creation and updates
+- Role management
 
-## Deployment
+## Security
 
-### Static Hosting
-The built application can be deployed to any static hosting service:
-- **Netlify**: Drag and drop the `dist` folder
-- **Vercel**: Connect your repository for automatic deployments
-- **AWS S3**: Upload the `dist` folder to an S3 bucket
-- **GitHub Pages**: Deploy directly from the repository
+- API keys are stored in memory only
+- No persistent storage of sensitive data
+- Secure iframe communication with parent window
+- HTTPS required for production deployment
 
-### Custom Domain
-Configure your custom domain in your hosting provider and update the URL in Kontent.ai.
+## Troubleshooting
 
-### Security Considerations
-- Store API keys securely in environment variables
-- Use HTTPS for all deployments
-- Configure CORS properly for API access
-- Implement proper error handling for API failures
-- Keep API keys separate and secure
+### Common Issues
+1. **API Key Errors** - Ensure valid Management and Subscription API keys
+2. **CORS Issues** - Ensure proper CORS configuration for iframe embedding
+3. **SDK Communication** - Check iframe messaging in browser console
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Development Tips
+- Use browser dev tools to monitor iframe communication
+- Check network tab for API call failures
+- Verify API key permissions in Kontent.ai
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support and questions:
-- Check the [Kontent.ai documentation](https://kontent.ai/learn/docs/custom-apps)
-- Review the [Management SDK documentation](https://github.com/kontent-ai/management-sdk-js)
-- Review the [Custom App SDK documentation](https://github.com/kontent-ai/custom-app-sdk-js)
-- Open an issue in this repository
-
-## Roadmap
-
-- [ ] Real-time collaboration features
-- [ ] Advanced reporting and exports
-- [ ] Mobile-responsive improvements
-- [ ] Integration with external tools
-- [ ] Advanced workflow automation
-- [ ] Multi-language support
-- [ ] Enhanced analytics with Delivery API
-- [ ] Subscription usage monitoring
-- [ ] Automated content workflows 
+MIT License 

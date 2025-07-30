@@ -1,6 +1,5 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const Dotenv = require('dotenv-webpack');
 const webpack = require('webpack');
 
 module.exports = {
@@ -30,7 +29,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.mjs'],
     fallback: {
       "events": false,
       "fs": false,
@@ -77,23 +76,21 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
     }),
-    new Dotenv({
-      path: './.env',
-      safe: true,
-      systemvars: true,
-    }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
     }),
   ],
+  experiments: {
+    topLevelAwait: true
+  },
   devServer: {
     static: {
       directory: path.join(__dirname, 'public'),
     },
     compress: true,
     port: 3000,
-    hot: true,
+    hot: true, // Re-enable hot module replacement
     open: true,
     headers: {
       'Access-Control-Allow-Origin': '*',

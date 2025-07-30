@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontent.ai Dashboard</title>
+    <script>
+        // Define process globally before any other scripts load
+        if (typeof process === 'undefined') {
+            window.process = {
+                env: {},
+                browser: true,
+                version: '',
+                versions: {},
+                platform: 'browser'
+            };
+        }
+    </script>
     <style>
         body {
             margin: 0;

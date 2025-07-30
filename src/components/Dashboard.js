@@ -1,202 +1,132 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FileText, 
+  BarChart3, 
   Users, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle,
+  FileText, 
   TrendingUp,
-  Plus,
-  Calendar
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Plus
 } from 'lucide-react';
 import kontentService from '../services/kontentService';
 
-const Dashboard = ({ sdk, user }) => {
+const Dashboard = ({ sdk, user, projectInfo }) => {
   const [stats, setStats] = useState({
     totalContent: 0,
+    totalUsers: 0,
     assignedContent: 0,
-    pendingContent: 0,
-    completedContent: 0,
-    activeUsers: 0
+    completedContent: 0
   });
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [recentContent, setRecentContent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        console.log('Loading real dashboard data from Kontent.ai...');
+        setLoading(true);
         
-        // Fetch real content items
+        // Check if we have the required API keys and context
+        if (!sdk?.apiKeys?.managementApiKey || !sdk?.apiKeys?.environmentId) {
+          // Don't throw an error, just show a message that API keys are needed
+          setError('Please configure your Management API Key and Environment ID to view dashboard data. This app requires valid Kontent.ai credentials to function.');
+          setLoading(false);
+          return;
+        }
+
+        // Initialize service with API keys from SDK
+        await kontentService.initialize(
+          sdk.apiKeys.environmentId, // Use environment ID from API keys
+          sdk.apiKeys.managementApiKey,
+          sdk.apiKeys.subscriptionApiKey,
+          sdk.apiKeys.subscriptionId
+        );
+
+        // Fetch content items
         const contentItems = await kontentService.getContentItems();
-        console.log('Dashboard received content items:', contentItems);
         
-        // Fetch real users for accurate user count
-        const users = await kontentService.getUsers();
-        const activeUsers = users.filter(user => user.status === 'active').length;
-        
-        // Calculate stats from real data
+        // Calculate stats
         const totalContent = contentItems.length;
         const assignedContent = contentItems.filter(item => item.assignedTo).length;
-        const pendingContent = contentItems.filter(item => item.status === 'draft').length;
         const completedContent = contentItems.filter(item => item.status === 'published').length;
         
+        // Get recent content (last 5 items)
+        const recent = contentItems
+          .sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified))
+          .slice(0, 5);
+
+        // Try to get users if subscription API is available
+        let totalUsers = 0;
+        try {
+          if (kontentService.hasSubscriptionAccess()) {
+            const users = await kontentService.getUsers();
+            totalUsers = users.length;
+          }
+        } catch (userError) {
+          console.warn('Could not fetch users:', userError);
+        }
+
         setStats({
           totalContent,
+          totalUsers,
           assignedContent,
-          pendingContent,
-          completedContent,
-          activeUsers
+          completedContent
         });
-
-        // Create recent activity from real content
-        const recentActivity = contentItems.slice(0, 5).map((item, index) => ({
-          id: index + 1,
-          type: item.status === 'published' ? 'completion' : 'creation',
-          message: `Content "${item.name}" ${item.status === 'published' ? 'completed' : 'created'}`,
-          timestamp: item.lastModified,
-          user: item.author
-        }));
-
-        setRecentActivity(recentActivity);
-        setIsLoading(false);
+        
+        setRecentContent(recent);
+        setLoading(false);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
-        setIsLoading(false);
+        setError(error.message);
+        setLoading(false);
       }
     };
 
     loadDashboardData();
-  }, []);
+  }, [sdk]);
 
-  const StatCard = ({ title, value, icon: Icon, color, trend }) => (
-    <div className="card" style={{ flex: 1, minWidth: '200px' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start'
-      }}>
-        <div>
-          <div style={{
-            color: 'var(--text-secondary)',
-            fontSize: '14px',
-            marginBottom: '8px'
-          }}>
-            {title}
-          </div>
-          <div style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: 'var(--text-primary)',
-            marginBottom: '4px'
-          }}>
-            {value}
-          </div>
-          {trend && (
-            <div style={{
-              fontSize: '12px',
-              color: trend > 0 ? 'var(--success-color)' : 'var(--danger-color)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              <TrendingUp size={12} />
-              {trend > 0 ? '+' : ''}{trend}% from last week
-            </div>
-          )}
-        </div>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '50%',
-          background: color,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white'
-        }}>
-          <Icon size={24} />
-        </div>
-      </div>
-    </div>
-  );
-
-  const ActivityItem = ({ activity }) => {
-    const getActivityIcon = (type) => {
-      switch (type) {
-        case 'assignment':
-          return <Users size={16} />;
-        case 'completion':
-          return <CheckCircle size={16} />;
-        case 'creation':
-          return <Plus size={16} />;
-        default:
-          return <FileText size={16} />;
-      }
-    };
-
-    const getActivityColor = (type) => {
-      switch (type) {
-        case 'assignment':
-          return 'var(--primary-color)';
-        case 'completion':
-          return 'var(--success-color)';
-        case 'creation':
-          return 'var(--warning-color)';
-        default:
-          return 'var(--text-secondary)';
-      }
-    };
-
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '12px',
-        padding: '12px 0',
-        borderBottom: '1px solid var(--border-color)'
-      }}>
-        <div style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '50%',
-          background: getActivityColor(activity.type),
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          flexShrink: 0
-        }}>
-          {getActivityIcon(activity.type)}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: '14px',
-            color: 'var(--text-primary)',
-            marginBottom: '4px'
-          }}>
-            {activity.message}
-          </div>
-          <div style={{
-            fontSize: '12px',
-            color: 'var(--text-secondary)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <span>{activity.user}</span>
-            <span>•</span>
-            <span>{activity.timestamp.toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
-    );
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'published':
+        return <CheckCircle size={16} color="green" />;
+      case 'draft':
+        return <Clock size={16} color="orange" />;
+      default:
+        return <AlertCircle size={16} color="gray" />;
+    }
   };
 
-  if (isLoading) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'published':
+        return 'green';
+      case 'draft':
+        return 'orange';
+      default:
+        return 'gray';
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="loading">
+      <div style={{ textAlign: 'center', padding: '40px' }}>
         <div>Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '40px',
+        color: 'red'
+      }}>
+        <AlertCircle size={48} style={{ marginBottom: '16px' }} />
+        <h3>Error Loading Dashboard</h3>
+        <p>{error}</p>
+        <p>Please check your API keys and try again.</p>
       </div>
     );
   }
@@ -204,170 +134,171 @@ const Dashboard = ({ sdk, user }) => {
   return (
     <div>
       {/* Welcome Section */}
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div>
-            <h2 style={{ margin: '0 0 8px 0', fontSize: '24px', fontWeight: '600' }}>
-              Welcome back, {user?.firstName || 'User'}!
-            </h2>
-            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-              Here's what's happening with your content today.
-            </p>
-          </div>
-          <button className="btn btn-primary">
-            <Plus size={16} />
-            Create New Assignment
-          </button>
-        </div>
+      <div style={{ marginBottom: '32px' }}>
+        <h2 style={{ margin: '0 0 8px 0', fontSize: '24px', fontWeight: '600' }}>
+          Welcome back, {user?.firstName || 'User'}!
+        </h2>
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+          Here's what's happening with your content today.
+        </p>
       </div>
 
       {/* Stats Grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '24px'
+        gap: '16px',
+        marginBottom: '32px'
       }}>
-        <StatCard
-          title="Total Content"
-          value={stats.totalContent}
-          icon={FileText}
-          color="var(--primary-color)"
-          trend={12}
-        />
-        <StatCard
-          title="Assigned Content"
-          value={stats.assignedContent}
-          icon={Users}
-          color="var(--warning-color)"
-          trend={8}
-        />
-        <StatCard
-          title="Pending Review"
-          value={stats.pendingContent}
-          icon={Clock}
-          color="var(--danger-color)"
-          trend={-5}
-        />
-        <StatCard
-          title="Completed"
-          value={stats.completedContent}
-          icon={CheckCircle}
-          color="var(--success-color)"
-          trend={15}
-        />
-      </div>
-
-      {/* Content Overview and Recent Activity */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '2fr 1fr',
-        gap: '24px'
-      }}>
-        {/* Content Overview */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Content Overview</h3>
-            <button className="btn btn-secondary">
-              <Calendar size={16} />
-              View Calendar
-            </button>
+        <div style={{
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <FileText size={20} color="var(--primary-color)" />
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Total Content</span>
           </div>
-          
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-            gap: '16px'
-          }}>
-            <div style={{
-              padding: '16px',
-              background: 'var(--secondary-color)',
-              borderRadius: 'var(--border-radius)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'var(--primary-color)',
-                marginBottom: '4px'
-              }}>
-                {Math.round((stats.assignedContent / stats.totalContent) * 100)}%
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                fontWeight: '500'
-              }}>
-                Assigned
-              </div>
-            </div>
-            
-            <div style={{
-              padding: '16px',
-              background: 'var(--secondary-color)',
-              borderRadius: 'var(--border-radius)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'var(--success-color)',
-                marginBottom: '4px'
-              }}>
-                {Math.round((stats.completedContent / stats.totalContent) * 100)}%
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                fontWeight: '500'
-              }}>
-                Completed
-              </div>
-            </div>
-            
-            <div style={{
-              padding: '16px',
-              background: 'var(--secondary-color)',
-              borderRadius: 'var(--border-radius)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                fontSize: '24px',
-                fontWeight: '600',
-                color: 'var(--danger-color)',
-                marginBottom: '4px'
-              }}>
-                {Math.round((stats.pendingContent / stats.totalContent) * 100)}%
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                fontWeight: '500'
-              }}>
-                Pending
-              </div>
-            </div>
+          <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            {stats.totalContent}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">Recent Activity</h3>
+        <div style={{
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <Users size={20} color="var(--primary-color)" />
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Active Users</span>
           </div>
-          
-          <div>
-            {recentActivity.map((activity) => (
-              <ActivityItem key={activity.id} activity={activity} />
-            ))}
+          <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            {stats.totalUsers}
           </div>
+        </div>
+
+        <div style={{
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <TrendingUp size={20} color="var(--primary-color)" />
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Assigned Content</span>
+          </div>
+          <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            {stats.assignedContent}
+          </div>
+        </div>
+
+        <div style={{
+          background: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          border: '1px solid var(--border-color)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <CheckCircle size={20} color="var(--primary-color)" />
+            <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Completed</span>
+          </div>
+          <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+            {stats.completedContent}
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Content */}
+      <div style={{
+        background: 'white',
+        borderRadius: '8px',
+        border: '1px solid var(--border-color)',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          padding: '20px',
+          borderBottom: '1px solid var(--border-color)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+            Recent Content
+          </h3>
+          <button style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            border: 'none',
+            background: 'var(--primary-color)',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            <Plus size={16} />
+            Add Content
+          </button>
+        </div>
+
+        <div>
+          {recentContent.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+              <FileText size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+              <p>No content items found.</p>
+              <p>Create your first content item to get started.</p>
+            </div>
+          ) : (
+            recentContent.map((item) => (
+              <div key={item.id} style={{
+                padding: '16px 20px',
+                borderBottom: '1px solid var(--border-color)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ fontWeight: '500', color: 'var(--text-primary)' }}>
+                      {item.name}
+                    </span>
+                    {getStatusIcon(item.status)}
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                    {item.type} • {item.author} • {new Date(item.lastModified).toLocaleDateString()}
+                  </div>
+                </div>
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  fontSize: '14px'
+                }}>
+                  {item.assignedTo && (
+                    <span style={{ color: 'var(--text-secondary)' }}>
+                      Assigned to {item.assignedTo}
+                    </span>
+                  )}
+                  <span style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    background: `var(--${getStatusColor(item.status)}-light)`,
+                    color: `var(--${getStatusColor(item.status)})`
+                  }}>
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
