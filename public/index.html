@@ -4,18 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontent.ai Dashboard</title>
-    <script>
-        // Define process globally before any other scripts load
-        if (typeof process === 'undefined') {
-            window.process = {
-                env: {},
-                browser: true,
-                version: '',
-                versions: {},
-                platform: 'browser'
-            };
-        }
-    </script>
     <style>
         body {
             margin: 0;
@@ -42,16 +30,70 @@
             z-index: 9999;
             font-size: 12px;
         }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        
+        .error {
+            color: red;
+            padding: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="test-message">HTML LOADED - TEST MESSAGE</div>
     <div id="root">
-        <div style="padding: 20px; text-align: center;">
+        <div class="loading">
             <h2>Kontent.ai Dashboard</h2>
             <p>Loading application...</p>
             <p>If you see this message, the HTML is loading but JavaScript may not be working.</p>
+            <div id="debug-info"></div>
         </div>
     </div>
+
+    <script>
+        // Simple test to see if JavaScript is working
+        console.log('HTML JavaScript test - this should appear in console');
+        
+        // Define process globally before any other scripts load
+        if (typeof process === 'undefined') {
+            window.process = {
+                env: {},
+                browser: true,
+                version: '',
+                versions: {},
+                platform: 'browser'
+            };
+        }
+        
+        // Add debug info
+        document.getElementById('debug-info').innerHTML = `
+            <div style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px;">
+                <p><strong>Debug Info:</strong></p>
+                <p>Time: ${new Date().toLocaleString()}</p>
+                <p>User Agent: ${navigator.userAgent}</p>
+                <p>Window Location: ${window.location.href}</p>
+            </div>
+        `;
+        
+        // Try to load the bundle
+        const script = document.createElement('script');
+        script.src = 'bundle.js';
+        script.onload = function() {
+            console.log('Bundle.js loaded successfully');
+            document.getElementById('debug-info').innerHTML += '<p style="color: green;">✅ Bundle.js loaded successfully</p>';
+        };
+        script.onerror = function() {
+            console.error('Failed to load bundle.js');
+            document.getElementById('debug-info').innerHTML += '<p style="color: red;">❌ Failed to load bundle.js</p>';
+        };
+        document.head.appendChild(script);
+    </script>
 </body>
 </html> 

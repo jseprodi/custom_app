@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vercel Static File Test</h1>
+    
+    <div class="test-box">
+        <h2>✅ HTML Test</h2>
+        <p>If you can see this page, HTML is working correctly.</p>
+        <p><strong>Time:</strong> <span id="time"></span></p>
+    </div>
+    
+    <div class="test-box">
+        <h2>✅ JavaScript Test</h2>
+        <p id="js-test">JavaScript is working if you see this message change.</p>
+    </div>
+    
+    <div class="test-box">
+        <h2>📁 File Structure Test</h2>
+        <p>Checking if bundle.js exists...</p>
+        <p id="file-test">Loading...</p>
+    </div>
+    
+    <script>
+        // Update time
+        document.getElementById('time').textContent = new Date().toLocaleString();
+        
+        // JavaScript test
+        document.getElementById('js-test').innerHTML = '<span class="success">✅ JavaScript is working!</span>';
+        
+        // File test
+        fetch('bundle.js')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('file-test').innerHTML = '<span class="success">✅ bundle.js found and accessible</span>';
+                } else {
+                    document.getElementById('file-test').innerHTML = '<span class="error">❌ bundle.js not found (Status: ' + response.status + ')</span>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('file-test').innerHTML = '<span class="error">❌ Error loading bundle.js: ' + error.message + '</span>';
+            });
+    </script>
+</body>
+</html> 
