@@ -2,101 +2,121 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
-module.exports = {
-  entry: './src/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
-    clean: true,
-    publicPath: '/',
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
+module.exports = (env, argv) => {
+  const isProduction = argv.mode === 'production';
+  
+  return {
+    entry: './src/index.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: 'bundle.js',
+      clean: true,
+      publicPath: '/',
+    },
+    module: {
+      rules: [
+        {
+          test: /\.(js|jsx)$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react'],
+            },
           },
         },
+        {
+          test: /\.css$/,
+          use: ['style-loader', 'css-loader'],
+        },
+      ],
+    },
+    resolve: {
+      extensions: ['.js', '.jsx', '.mjs'],
+      fallback: {
+        "events": false,
+        "fs": false,
+        "path": false,
+        "crypto": false,
+        "stream": false,
+        "util": false,
+        "buffer": require.resolve("buffer"),
+        "process": require.resolve("process/browser"),
+        "url": false,
+        "querystring": false,
+        "zlib": false,
+        "http": false,
+        "https": false,
+        "os": false,
+        "assert": false,
+        "constants": false,
+        "domain": false,
+        "punycode": false,
+        "string_decoder": false,
+        "sys": false,
+        "tty": false,
+        "vm": false,
+        "tls": false,
+        "net": false,
+        "child_process": false,
+        "cluster": false,
+        "dgram": false,
+        "dns": false,
+        "module": false,
+        "readline": false,
+        "repl": false,
+        "string_decoder": false,
+        "timers": false,
+        "tty": false,
+        "v8": false,
+        "worker_threads": false
       },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
+      alias: {
+        'process/browser': require.resolve('process/browser')
+      }
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: './public/index.html',
+        minify: isProduction ? {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true,
+        } : false,
+      }),
+      new webpack.ProvidePlugin({
+        process: 'process/browser',
+        Buffer: ['buffer', 'Buffer'],
+      }),
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development'),
+      }),
     ],
-  },
-  resolve: {
-    extensions: ['.js', '.jsx', '.mjs'],
-    fallback: {
-      "events": false,
-      "fs": false,
-      "path": false,
-      "crypto": false,
-      "stream": false,
-      "util": false,
-      "buffer": require.resolve("buffer"),
-      "process": require.resolve("process/browser"),
-      "url": false,
-      "querystring": false,
-      "zlib": false,
-      "http": false,
-      "https": false,
-      "os": false,
-      "assert": false,
-      "constants": false,
-      "domain": false,
-      "punycode": false,
-      "string_decoder": false,
-      "sys": false,
-      "tty": false,
-      "vm": false,
-      "tls": false,
-      "net": false,
-      "child_process": false,
-      "cluster": false,
-      "dgram": false,
-      "dns": false,
-      "module": false,
-      "readline": false,
-      "repl": false,
-      "string_decoder": false,
-      "timers": false,
-      "tty": false,
-      "v8": false,
-      "worker_threads": false
+    experiments: {
+      topLevelAwait: true
     },
-    alias: {
-      'process/browser': require.resolve('process/browser')
-    }
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-    }),
-    new webpack.ProvidePlugin({
-      process: 'process/browser',
-      Buffer: ['buffer', 'Buffer'],
-    }),
-  ],
-  experiments: {
-    topLevelAwait: true
-  },
-  devServer: {
-    static: {
-      directory: path.join(__dirname, 'public'),
+    devServer: {
+      static: {
+        directory: path.join(__dirname, 'public'),
+      },
+      compress: true,
+      port: 3000,
+      hot: true,
+      open: true,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'X-Frame-Options': 'ALLOWALL',
+        'Content-Security-Policy': "frame-ancestors *"
+      }
     },
-    compress: true,
-    port: 3000,
-    hot: true, // Re-enable hot module replacement
-    open: true,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'X-Frame-Options': 'ALLOWALL',
-      'Content-Security-Policy': "frame-ancestors *"
-    }
-  },
-  mode: 'development',
+    mode: isProduction ? 'production' : 'development',
+    devtool: isProduction ? false : 'eval-source-map',
+  };
 }; 

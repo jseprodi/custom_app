@@ -19,7 +19,39 @@ import UserManagement from './components/UserManagement';
 import Analytics from './components/Analytics';
 import { getCustomAppContext } from './services/sdkWrapper';
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('App Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <h2>Something went wrong.</h2>
+          <p>Error: {this.state.error?.message}</p>
+          <button onClick={() => window.location.reload()}>Reload Page</button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const App = () => {
+  console.log('App component rendering...');
+  
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -35,12 +67,15 @@ const App = () => {
   const [showApiKeyModal, setShowApiKeyModal] = useState(true); // Show modal by default
 
   useEffect(() => {
+    console.log('App useEffect running...');
     const initializeApp = async () => {
       try {
+        console.log('Initializing app...');
         setIsLoading(true);
         
         // Get context from the official Kontent.ai Custom App SDK
         const response = await getCustomAppContext();
+        console.log('SDK Response:', response);
         
         if (response.isError) {
           console.error('SDK Error:', { errorCode: response.code, description: response.description });
@@ -48,6 +83,7 @@ const App = () => {
           // Check if it's a development environment error
           if (response.description.includes('Not running in Kontent.ai environment')) {
             // Don't set error, just show the API key modal
+            console.log('Development environment detected, showing API key modal');
             setIsLoading(false);
             return;
           } else {
@@ -152,143 +188,147 @@ const App = () => {
   }
 
   return (
-    <div className="app">
-      {/* Header */}
-      <header style={{
-        background: 'white',
-        borderBottom: '1px solid var(--border-color)',
-        padding: '16px 0'
-      }}>
-        <div className="container">
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+    <ErrorBoundary>
+      <div className="app">
+        {/* Header */}
+        <header style={{
+          background: 'white',
+          borderBottom: '1px solid var(--border-color)',
+          padding: '16px 0'
+        }}>
+          <div className="container">
             <div style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}>
               <div style={{
-                width: '32px',
-                height: '32px',
-                background: 'var(--primary-color)',
-                borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontWeight: 'bold'
+                gap: '12px'
               }}>
-                K
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  background: 'var(--primary-color)',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}>
+                  K
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
+                    Content Management Dashboard
+                  </h1>
+                  {projectInfo && (
+                    <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {projectInfo.name} • {projectInfo.environment}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '600' }}>
-                  Content Management Dashboard
-                </h1>
-                {projectInfo && (
-                  <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--text-secondary)' }}>
-                    {projectInfo.name} • {projectInfo.environment}
-                  </p>
+              
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                {user && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    color: 'var(--text-secondary)',
+                    fontSize: '14px'
+                  }}>
+                    <span>Welcome, {user.firstName} {user.lastName}</span>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      background: 'var(--secondary-color)',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: '500'
+                    }}>
+                      {user.firstName?.[0]}{user.lastName?.[0]}
+                    </div>
+                  </div>
                 )}
+                
+                
               </div>
             </div>
-            
+          </div>
+        </header>
+
+        {/* Navigation */}
+        <nav style={{
+          background: 'white',
+          borderBottom: '1px solid var(--border-color)',
+          padding: '8px 0'
+        }}>
+          <div className="container">
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '12px'
+              gap: '8px',
+              overflowX: 'auto',
+              padding: '4px 0'
             }}>
-              {user && (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  color: 'var(--text-secondary)',
-                  fontSize: '14px'
-                }}>
-                  <span>Welcome, {user.firstName} {user.lastName}</span>
-                  <div style={{
-                    width: '32px',
-                    height: '32px',
-                    background: 'var(--secondary-color)',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: '500'
-                  }}>
-                    {user.firstName?.[0]}{user.lastName?.[0]}
-                  </div>
-                </div>
-              )}
-              
-              
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 16px',
+                      border: 'none',
+                      background: activeTab === tab.id ? 'var(--primary-color)' : 'transparent',
+                      color: activeTab === tab.id ? 'white' : 'var(--text-primary)',
+                      borderRadius: 'var(--border-radius)',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <Icon size={16} />
+                    {tab.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </header>
+        </nav>
 
-      {/* Navigation */}
-      <nav style={{
-        background: 'white',
-        borderBottom: '1px solid var(--border-color)'
-      }}>
-        <div className="container">
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            padding: '8px 0'
-          }}>
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
-                    border: 'none',
-                    background: activeTab === tab.id ? 'var(--primary-color)' : 'transparent',
-                    color: activeTab === tab.id ? 'white' : 'var(--text-primary)',
-                    borderRadius: 'var(--border-radius)',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    whiteSpace: 'nowrap',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <Icon size={16} />
-                  {tab.label}
-                </button>
-              );
-            })}
+        {/* Main Content */}
+        <main style={{ padding: '24px 0' }}>
+          <div className="container">
+            {renderContent()}
           </div>
-        </div>
-      </nav>
+        </main>
 
-      {/* Main Content */}
-      <main style={{ padding: '24px 0' }}>
-        <div className="container">
-          {renderContent()}
-        </div>
-      </main>
-
-      {/* API Key Modal */}
-      {showApiKeyModal && (
-        <ApiKeyModal 
-          apiKeys={apiKeys}
-          onSubmit={handleApiKeySubmit}
-          onClose={() => setShowApiKeyModal(false)}
-        />
-      )}
-    </div>
+        {/* API Key Modal */}
+        {showApiKeyModal && (
+          <ApiKeyModal 
+            apiKeys={apiKeys}
+            onSubmit={handleApiKeySubmit}
+            onClose={() => setShowApiKeyModal(false)}
+          />
+        )}
+      </div>
+    </ErrorBoundary>
   );
 };
 
