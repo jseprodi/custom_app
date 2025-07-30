@@ -3,97 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kontent.ai Dashboard</title>
+    <title>Kontent.ai Dashboard - Test</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        #root {
-            height: 100vh;
-        }
-        
-        .test-message {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: red;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 9999;
-            font-size: 12px;
-        }
-        
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-        
-        .error {
-            color: red;
             padding: 20px;
-            text-align: center;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .test-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="test-message">HTML LOADED - TEST MESSAGE</div>
-    <div id="root">
-        <div class="loading">
-            <h2>Kontent.ai Dashboard</h2>
-            <p>Loading application...</p>
-            <p>If you see this message, the HTML is loading but JavaScript may not be working.</p>
-            <div id="debug-info"></div>
+    <div class="container">
+        <h1>🚀 Kontent.ai Dashboard - Deployment Test</h1>
+        
+        <div class="test-box">
+            <h3>✅ Basic HTML Test</h3>
+            <p>If you can see this page, HTML is working correctly.</p>
+            <p><strong>Current Time:</strong> <span id="current-time"></span></p>
+        </div>
+        
+        <div class="test-box">
+            <h3>✅ JavaScript Test</h3>
+            <p id="js-status">Testing JavaScript...</p>
+        </div>
+        
+        <div class="test-box">
+            <h3>🌐 Network Test</h3>
+            <p id="network-status">Testing network connectivity...</p>
+        </div>
+        
+        <div class="test-box">
+            <h3>📁 File Access Test</h3>
+            <p id="file-status">Testing file access...</p>
+        </div>
+        
+        <div class="test-box">
+            <h3>🔧 Debug Info</h3>
+            <p><strong>URL:</strong> <span id="current-url"></span></p>
+            <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+            <p><strong>Screen Size:</strong> <span id="screen-size"></span></p>
         </div>
     </div>
 
     <script>
-        // Simple test to see if JavaScript is working
-        console.log('HTML JavaScript test - this should appear in console');
+        console.log('=== KONTENT.AI DASHBOARD TEST ===');
+        console.log('Page loaded at:', new Date().toISOString());
         
-        // Define process globally before any other scripts load
-        if (typeof process === 'undefined') {
-            window.process = {
-                env: {},
-                browser: true,
-                version: '',
-                versions: {},
-                platform: 'browser'
-            };
-        }
+        // Update time
+        document.getElementById('current-time').textContent = new Date().toLocaleString();
         
-        // Add debug info
-        document.getElementById('debug-info').innerHTML = `
-            <div style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 12px;">
-                <p><strong>Debug Info:</strong></p>
-                <p>Time: ${new Date().toLocaleString()}</p>
-                <p>User Agent: ${navigator.userAgent}</p>
-                <p>Window Location: ${window.location.href}</p>
-            </div>
-        `;
+        // JavaScript test
+        document.getElementById('js-status').innerHTML = '<span class="success">✅ JavaScript is working correctly!</span>';
         
-        // Try to load the bundle
-        const script = document.createElement('script');
-        script.src = 'bundle.js';
-        script.onload = function() {
-            console.log('Bundle.js loaded successfully');
-            document.getElementById('debug-info').innerHTML += '<p style="color: green;">✅ Bundle.js loaded successfully</p>';
-        };
-        script.onerror = function() {
-            console.error('Failed to load bundle.js');
-            document.getElementById('debug-info').innerHTML += '<p style="color: red;">❌ Failed to load bundle.js</p>';
-        };
-        document.head.appendChild(script);
+        // Network test
+        fetch('https://httpbin.org/get')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('network-status').innerHTML = '<span class="success">✅ Network connectivity working</span>';
+            })
+            .catch(error => {
+                document.getElementById('network-status').innerHTML = '<span class="error">❌ Network error: ' + error.message + '</span>';
+            });
+        
+        // File access test
+        fetch('bundle.js')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('file-status').innerHTML = '<span class="success">✅ bundle.js accessible</span>';
+                } else {
+                    document.getElementById('file-status').innerHTML = '<span class="warning">⚠️ bundle.js status: ' + response.status + '</span>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('file-status').innerHTML = '<span class="error">❌ bundle.js error: ' + error.message + '</span>';
+            });
+        
+        // Debug info
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('screen-size').textContent = window.screen.width + 'x' + window.screen.height;
+        
+        console.log('All tests completed');
     </script>
 </body>
 </html> 
