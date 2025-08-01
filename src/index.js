@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import SimpleApp from './SimpleApp';
 import './styles/global.css';
 
 // Simple fallback component
@@ -25,7 +26,9 @@ try {
     console.error('Root element not found');
     document.body.innerHTML = '<div style="padding: 20px; text-align: center;"><h2>Error</h2><p>Root element not found</p></div>';
   } else {
-    root.render(<App />);
+    // Try SimpleApp first for debugging
+    console.log('Rendering SimpleApp for testing...');
+    root.render(<SimpleApp />);
   }
 } catch (error) {
   console.error('Failed to initialize app:', error);

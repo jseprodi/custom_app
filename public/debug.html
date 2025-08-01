@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Kontent.ai Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Console</h1>
+    
+    <div class="debug-box">
+        <h3>📁 File Access Test</h3>
+        <p id="bundle-test">Testing bundle.js...</p>
+        <p id="html-test">Testing index.html...</p>
+    </div>
+    
+    <div class="debug-box">
+        <h3>🌐 Network Test</h3>
+        <p id="network-test">Testing network...</p>
+    </div>
+    
+    <div class="debug-box">
+        <h3>🔧 Console Logs</h3>
+        <div id="console-logs" style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+    
+    <div class="debug-box">
+        <h3>📊 Page Info</h3>
+        <p><strong>URL:</strong> <span id="current-url"></span></p>
+        <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+        <p><strong>Screen Size:</strong> <span id="screen-size"></span></p>
+        <p><strong>Time:</strong> <span id="current-time"></span></p>
+    </div>
+
+    <script>
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        const logContainer = document.getElementById('console-logs');
+        
+        function addLog(type, message) {
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '5px';
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'warn' ? '#ffc107' : '#17a2b8';
+            logEntry.textContent = `[${type.toUpperCase()}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog('log', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('error', args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog('warn', args.join(' '));
+        };
+        
+        console.log('Debug page loaded at:', new Date().toISOString());
+        
+        // Test bundle.js
+        fetch('bundle.js')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('bundle-test').innerHTML = '<span class="success">✅ bundle.js accessible (Status: ' + response.status + ')</span>';
+                    console.log('bundle.js accessible');
+                } else {
+                    document.getElementById('bundle-test').innerHTML = '<span class="error">❌ bundle.js not found (Status: ' + response.status + ')</span>';
+                    console.error('bundle.js not found');
+                }
+            })
+            .catch(error => {
+                document.getElementById('bundle-test').innerHTML = '<span class="error">❌ Error loading bundle.js: ' + error.message + '</span>';
+                console.error('bundle.js error:', error);
+            });
+        
+        // Test index.html
+        fetch('index.html')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('html-test').innerHTML = '<span class="success">✅ index.html accessible</span>';
+                } else {
+                    document.getElementById('html-test').innerHTML = '<span class="error">❌ index.html not found</span>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('html-test').innerHTML = '<span class="error">❌ Error loading index.html: ' + error.message + '</span>';
+            });
+        
+        // Network test
+        fetch('https://httpbin.org/get')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('network-test').innerHTML = '<span class="success">✅ Network connectivity working</span>';
+                console.log('Network test successful');
+            })
+            .catch(error => {
+                document.getElementById('network-test').innerHTML = '<span class="error">❌ Network error: ' + error.message + '</span>';
+                console.error('Network test failed:', error);
+            });
+        
+        // Page info
+        document.getElementById('current-url').textContent = window.location.href;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('screen-size').textContent = window.screen.width + 'x' + window.screen.height;
+        document.getElementById('current-time').textContent = new Date().toLocaleString();
+        
+        // Test loading the actual React app
+        setTimeout(() => {
+            console.log('Testing React app loading...');
+            const script = document.createElement('script');
+            script.src = 'bundle.js';
+            script.onload = () => {
+                console.log('✅ bundle.js loaded successfully');
+                addLog('success', 'bundle.js loaded successfully');
+            };
+            script.onerror = (error) => {
+                console.error('❌ Failed to load bundle.js:', error);
+                addLog('error', 'Failed to load bundle.js: ' + error.message);
+            };
+            document.head.appendChild(script);
+        }, 2000);
+    </script>
+</body>
+</html> 
