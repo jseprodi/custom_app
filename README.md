@@ -1,114 +1,73 @@
-# Kontent.ai Custom App Dashboard
+# Kontent.ai Dashboard App
 
-A React-based dashboard application designed to work as a custom app within the Kontent.ai platform. This app provides content management, user management, and analytics features using the official Kontent.ai APIs.
+A comprehensive custom app for Kontent.ai that provides a management dashboard for content assignment, user management, and analytics.
 
-## Features
+## 🚀 Deployment
 
-- **Content Management** - View and manage content items using the Management API
-- **User Management** - Manage users using the Subscription API
-- **Analytics** - View content analytics and performance metrics
-- **API Key Management** - Secure input of API keys through modal interface
-- **Real-time Integration** - Works with live Kontent.ai data
+This app is deployed on Vercel. If you're experiencing blank pages, try these troubleshooting steps:
 
-## Architecture
+### 1. Check Vercel Project Settings
+- Go to your Vercel dashboard
+- Navigate to Project Settings → General
+- Ensure the following settings:
+  - **Framework Preset**: Other
+  - **Build Command**: `npm run build`
+  - **Output Directory**: `dist`
+  - **Install Command**: `npm install`
 
-### SDK Implementation
-The app uses a custom SDK implementation that:
-- Communicates with the parent Kontent.ai window when embedded as an iframe
-- Requires proper Kontent.ai environment for full functionality
-- Handles iframe messaging for context and configuration retrieval
+### 2. Test Static Files
+Try accessing these test pages:
+- `https://your-url.vercel.app/minimal.html` - Minimal test
+- `https://your-url.vercel.app/test.html` - Simple test
+- `https://your-url.vercel.app/static-test.html` - Comprehensive test
 
-### API Integration
-- **Management API** - For all content-related operations
-- **Subscription API** - For user management operations
-- **Custom App SDK** - For context and configuration
+### 3. Check Build Logs
+- Go to Vercel dashboard → Deployments
+- Click on the latest deployment
+- Check the build logs for any errors
 
-## Development
+### 4. Environment Variables
+If using API keys, ensure they're set in Vercel:
+- Go to Project Settings → Environment Variables
+- Add any required environment variables
 
-### Prerequisites
-- Node.js 16+
-- npm or yarn
+## 🛠️ Local Development
 
-### Installation
 ```bash
+# Install dependencies
 npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-### Running the App
-```bash
-npm start
+## 📁 Project Structure
+
+```
+├── public/          # Static files
+├── src/             # Source code
+│   ├── components/  # React components
+│   ├── services/    # API services
+│   └── styles/      # CSS styles
+├── dist/            # Build output
+└── vercel.json      # Vercel configuration
 ```
 
-The app will run at `http://localhost:3000`
+## 🔧 Troubleshooting
 
-### API Keys
-When running the app, you'll need to provide:
-1. **Management API Key** - For content operations
-2. **Subscription API Key** - For user management
-3. **Subscription ID** - For user management
-4. **Environment ID** - Your Kontent.ai environment ID
+If pages are blank:
 
-Click the "API Keys" button in the header to configure these.
+1. **Check browser console** for JavaScript errors
+2. **Test static files** using the test pages above
+3. **Verify Vercel settings** match the configuration
+4. **Check build logs** for any deployment errors
+5. **Try accessing files directly** to see if they exist
 
-**Note:** This app is designed to run within Kontent.ai as a custom app. For development, you can configure API keys manually, but full functionality requires the Kontent.ai environment.
+## 📝 Notes
 
-## Production Deployment
-
-### As a Kontent.ai Custom App
-1. Build the app: `npm run build`
-2. Deploy the `dist` folder to your hosting service
-3. Configure the custom app in Kontent.ai with the deployed URL
-4. The app will automatically detect the Kontent.ai environment and use the real SDK
-
-### Standalone Deployment
-1. Build the app: `npm run build`
-2. Deploy the `dist` folder to your hosting service
-3. Configure API keys through the modal interface
-
-## SDK Behavior
-
-### In Kontent.ai Environment
-- Detects iframe environment
-- Communicates with parent window
-- Retrieves real context and configuration
-- Uses official APIs with provided credentials
-
-### In Development Environment
-- Returns error indicating app must be embedded in Kontent.ai
-- Requires manual API key configuration for testing
-- Limited functionality without proper Kontent.ai context
-
-## API Usage
-
-### Management API
-- Content item retrieval and management
-- Workflow operations
-- Content type and collection management
-
-### Subscription API
-- User management
-- User creation and updates
-- Role management
-
-## Security
-
-- API keys are stored in memory only
-- No persistent storage of sensitive data
-- Secure iframe communication with parent window
-- HTTPS required for production deployment
-
-## Troubleshooting
-
-### Common Issues
-1. **API Key Errors** - Ensure valid Management and Subscription API keys
-2. **CORS Issues** - Ensure proper CORS configuration for iframe embedding
-3. **SDK Communication** - Check iframe messaging in browser console
-
-### Development Tips
-- Use browser dev tools to monitor iframe communication
-- Check network tab for API call failures
-- Verify API key permissions in Kontent.ai
-
-## License
-
-MIT License 
+- The app uses webpack for bundling
+- Static files are copied to the dist directory during build
+- The app supports both standalone and Kontent.ai embedded modes 
