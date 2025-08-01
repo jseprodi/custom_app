@@ -1,5 +1,4 @@
 // Standalone SDK implementation for Kontent.ai Custom App
-// This simulates the SDK behavior without relying on the problematic package
 
 // Error codes from the SDK
 export const ErrorCode = {
