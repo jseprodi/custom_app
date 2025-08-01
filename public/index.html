@@ -3,115 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kontent.ai Dashboard - Test</title>
+    <title>Kontent.ai Dashboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: #f0f0f0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        
+        #root {
+            min-height: 100vh;
         }
-        .test-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
-            border-left: 4px solid #007bff;
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 18px;
+            color: #666;
         }
-        .success {
-            color: #28a745;
-            font-weight: bold;
-        }
+        
         .error {
-            color: #dc3545;
-            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
         }
-        .warning {
-            color: #ffc107;
-            font-weight: bold;
+        
+        .error h3 {
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+        
+        .error p {
+            color: #666;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🚀 Kontent.ai Dashboard - Deployment Test</h1>
-        
-        <div class="test-box">
-            <h3>✅ Basic HTML Test</h3>
-            <p>If you can see this page, HTML is working correctly.</p>
-            <p><strong>Current Time:</strong> <span id="current-time"></span></p>
-        </div>
-        
-        <div class="test-box">
-            <h3>✅ JavaScript Test</h3>
-            <p id="js-status">Testing JavaScript...</p>
-        </div>
-        
-        <div class="test-box">
-            <h3>🌐 Network Test</h3>
-            <p id="network-status">Testing network connectivity...</p>
-        </div>
-        
-        <div class="test-box">
-            <h3>📁 File Access Test</h3>
-            <p id="file-status">Testing file access...</p>
-        </div>
-        
-        <div class="test-box">
-            <h3>🔧 Debug Info</h3>
-            <p><strong>URL:</strong> <span id="current-url"></span></p>
-            <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
-            <p><strong>Screen Size:</strong> <span id="screen-size"></span></p>
-        </div>
+    <div id="root">
+        <div class="loading">Loading dashboard...</div>
     </div>
-
+    
     <script>
-        console.log('=== KONTENT.AI DASHBOARD TEST ===');
-        console.log('Page loaded at:', new Date().toISOString());
+        // Error handling for bundle loading
+        window.addEventListener('error', function(e) {
+            console.error('Script error:', e);
+            document.getElementById('root').innerHTML = `
+                <div class="error">
+                    <h3>Error Loading Application</h3>
+                    <p>There was an error loading the dashboard application.</p>
+                    <p>Error: ${e.message}</p>
+                    <p>Please check the console for more details.</p>
+                </div>
+            `;
+        });
         
-        // Update time
-        document.getElementById('current-time').textContent = new Date().toLocaleString();
-        
-        // JavaScript test
-        document.getElementById('js-status').innerHTML = '<span class="success">✅ JavaScript is working correctly!</span>';
-        
-        // Network test
-        fetch('https://httpbin.org/get')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('network-status').innerHTML = '<span class="success">✅ Network connectivity working</span>';
-            })
-            .catch(error => {
-                document.getElementById('network-status').innerHTML = '<span class="error">❌ Network error: ' + error.message + '</span>';
-            });
-        
-        // File access test
-        fetch('bundle.js')
-            .then(response => {
-                if (response.ok) {
-                    document.getElementById('file-status').innerHTML = '<span class="success">✅ bundle.js accessible</span>';
-                } else {
-                    document.getElementById('file-status').innerHTML = '<span class="warning">⚠️ bundle.js status: ' + response.status + '</span>';
-                }
-            })
-            .catch(error => {
-                document.getElementById('file-status').innerHTML = '<span class="error">❌ bundle.js error: ' + error.message + '</span>';
-            });
-        
-        // Debug info
-        document.getElementById('current-url').textContent = window.location.href;
-        document.getElementById('user-agent').textContent = navigator.userAgent;
-        document.getElementById('screen-size').textContent = window.screen.width + 'x' + window.screen.height;
-        
-        console.log('All tests completed');
+        // Check if bundle loads within 10 seconds
+        setTimeout(function() {
+            const root = document.getElementById('root');
+            if (root.innerHTML.includes('Loading dashboard...')) {
+                root.innerHTML = `
+                    <div class="error">
+                        <h3>Application Failed to Load</h3>
+                        <p>The dashboard application failed to load within the expected time.</p>
+                        <p>Please check if bundle.js is accessible and try refreshing the page.</p>
+                    </div>
+                `;
+            }
+        }, 10000);
     </script>
 </body>
 </html> 

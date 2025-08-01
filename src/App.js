@@ -73,52 +73,57 @@ const App = () => {
         console.log('Initializing app...');
         setIsLoading(true);
         
-        // Get context from the official Kontent.ai Custom App SDK
-        const response = await getCustomAppContext();
-        console.log('SDK Response:', response);
+        // Check if we're in a Kontent.ai environment
+        const isInKontentAi = window.parent && window.parent !== window;
         
-        if (response.isError) {
-          console.error('SDK Error:', { errorCode: response.code, description: response.description });
-          
-          // Check if it's a development environment error
-          if (response.description.includes('Not running in Kontent.ai environment')) {
-            // Don't set error, just show the API key modal
-            console.log('Development environment detected, showing API key modal');
-            setIsLoading(false);
-            return;
-          } else {
-            setError(`Failed to initialize: ${response.description}`);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
-        setSdkContext(response.context);
-        
-        // Extract user information from context
-        if (response.context) {
-          setUser({
-            id: response.context.userId,
-            email: response.context.userEmail,
-            firstName: response.context.userEmail?.split('@')[0] || 'User',
-            lastName: '',
-            role: response.context.userRoles?.[0]?.codename || 'User'
-          });
-        }
-
-        // Set project info from context, using environment ID from API keys if available
-        const environmentId = apiKeys.environmentId || response.context?.environmentId;
-        if (environmentId) {
-          setProjectInfo({
-            id: environmentId,
-            name: 'Kontent.ai Project',
-            environment: 'Production',
-            settings: {
-              languages: ['en-US'],
-              timezone: 'UTC',
-              features: ['content-management', 'user-management']
+        if (isInKontentAi) {
+          // Try to get context from the official Kontent.ai Custom App SDK
+          try {
+            const response = await getCustomAppContext();
+            console.log('SDK Response:', response);
+            
+            if (response.isError) {
+              console.error('SDK Error:', { errorCode: response.code, description: response.description });
+              setError(`Failed to initialize: ${response.description}`);
+              setIsLoading(false);
+              return;
             }
-          });
+            
+            setSdkContext(response.context);
+            
+            // Extract user information from context
+            if (response.context) {
+              setUser({
+                id: response.context.userId,
+                email: response.context.userEmail,
+                firstName: response.context.userEmail?.split('@')[0] || 'User',
+                lastName: '',
+                role: response.context.userRoles?.[0]?.codename || 'User'
+              });
+            }
+
+            // Set project info from context, using environment ID from API keys if available
+            const environmentId = apiKeys.environmentId || response.context?.environmentId;
+            if (environmentId) {
+              setProjectInfo({
+                id: environmentId,
+                name: 'Kontent.ai Project',
+                environment: 'Production',
+                settings: {
+                  languages: ['en-US'],
+                  timezone: 'UTC',
+                  features: ['content-management', 'user-management']
+                }
+              });
+            }
+          } catch (sdkError) {
+            console.error('SDK initialization failed:', sdkError);
+            // Fall back to standalone mode
+            console.log('Falling back to standalone mode');
+          }
+        } else {
+          // Not in Kontent.ai environment, show API key modal
+          console.log('Not in Kontent.ai environment, showing API key modal');
         }
 
         setIsLoading(false);
