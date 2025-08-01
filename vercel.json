@@ -2,24 +2,23 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": null,
+  "functions": {},
   "rewrites": [
+    {
+      "source": "/static-test.html",
+      "destination": "/static-test.html"
+    },
+    {
+      "source": "/simple-test.html",
+      "destination": "/simple-test.html"
+    },
+    {
+      "source": "/debug.html",
+      "destination": "/debug.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static-test.html",
-      "dest": "/static-test.html"
-    },
-    {
-      "src": "/simple-test.html", 
-      "dest": "/simple-test.html"
-    },
-    {
-      "src": "/debug.html",
-      "dest": "/debug.html"
     }
   ],
   "headers": [
