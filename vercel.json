@@ -8,6 +8,20 @@
       "destination": "/index.html"
     }
   ],
+  "routes": [
+    {
+      "src": "/static-test.html",
+      "dest": "/static-test.html"
+    },
+    {
+      "src": "/simple-test.html", 
+      "dest": "/simple-test.html"
+    },
+    {
+      "src": "/debug.html",
+      "dest": "/debug.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
