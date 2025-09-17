@@ -1,6 +1,6 @@
 # Kontent.ai Dashboard Custom App
 
-A comprehensive custom app for Kontent.ai that provides a management dashboard for content assignment, user management, and analytics. This app integrates with Kontent.ai's Management API to offer enhanced content management capabilities.
+A comprehensive custom app for Kontent.ai that provides a management dashboard for bulk content assignment, user management, and analytics. This app integrates with Kontent.ai's Management API and Subscription API to offer enhanced content management capabilities.
 
 ## 🚀 Features
 
@@ -32,7 +32,7 @@ A comprehensive custom app for Kontent.ai that provides a management dashboard f
 
 ## 📋 Prerequisites
 
-- Kontent.ai project with Management API access
+- Kontent.ai project with Management & Subscription API access
 - Node.js 16+ and npm
 - Modern web browser
 - Vercel account (for deployment)
@@ -65,33 +65,13 @@ npm run dev
 
 The app will be available at `http://localhost:8080`
 
-## 🚀 Deployment
-
-### Vercel Deployment
-1. Connect your GitHub repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Manual Build
-```bash
-npm run build
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `KONTENT_MANAGEMENT_API_KEY` | Your Kontent.ai Management API key | Yes |
-| `KONTENT_PROJECT_ID` | Your Kontent.ai project ID | Yes |
-| `KONTENT_ENVIRONMENT_ID` | Your Kontent.ai environment ID | Yes |
 
 ### Custom App Setup in Kontent.ai
 1. Go to your Kontent.ai project settings
 2. Navigate to "Custom apps"
 3. Add a new custom app
 4. Set the app URL to your deployed application
-5. Configure permissions for Management API access
+5. Configure permissions for Management and Subscription API access
 
 ## 📖 Usage
 
@@ -153,8 +133,6 @@ src/
 
 ## 🔒 Security
 
-- API keys are stored securely as environment variables
-- All API calls are made server-side to protect credentials
 - User permissions are respected through Kontent.ai's role system
 - HTTPS is enforced in production
 
@@ -163,17 +141,16 @@ src/
 ### Common Issues
 
 **App not loading**
-- Check environment variables are set correctly
 - Verify API key has proper permissions
 - Check browser console for errors
 
 **Assignments not saving**
 - Ensure user has contributor permissions
 - Check language variant exists
-- Verify Management API access
+- Verify Management & Subscription API access
 
 **Content not displaying**
-- Check project ID and environment ID
+- Check environment ID and subscription ID
 - Verify content items exist
 - Check API rate limits
 
