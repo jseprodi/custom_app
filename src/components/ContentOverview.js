@@ -246,7 +246,6 @@ const ContentOverview = ({ sdk }) => {
                   marginBottom: '12px'
                 }}>
                   <span>{item.type}</span>
-                  <span aria-hidden="true" style={{ opacity: 0.6 }}>|</span>
                   <span style={{
                     color: getPriorityColor(item.priority),
                     fontWeight: '500',
