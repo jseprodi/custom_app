@@ -271,3 +271,15 @@ body {
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
 } 
+
+/* Safe separator utility and glyph fallback */
+.separator-safe {
+  opacity: 0.6;
+  padding: 0 4px;
+  font-family: 'Segoe UI Symbol', 'Segoe UI', Arial, sans-serif;
+}
+
+/* If host markup uses item-details → ensure the middle separator renders across fonts */
+.item-details span.item.type + span {
+  font-family: 'Segoe UI Symbol', 'Segoe UI', Arial, sans-serif;
+}
