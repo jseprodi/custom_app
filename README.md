@@ -1,73 +1,217 @@
-# Kontent.ai Dashboard App
+# Kontent.ai Dashboard Custom App
 
-A comprehensive custom app for Kontent.ai that provides a management dashboard for content assignment, user management, and analytics.
+A comprehensive custom app for Kontent.ai that provides a management dashboard for content assignment, user management, and analytics. This app integrates with Kontent.ai's Management API to offer enhanced content management capabilities.
+
+## 🚀 Features
+
+### Content Assignment
+- **Bulk Assignment**: Assign multiple content items to users at once
+- **Individual Assignment**: Assign specific content items to contributors
+- **Assignment Management**: View, modify, and remove existing assignments
+- **Due Date Tracking**: Set and track assignment deadlines
+- **Assignment Notes**: Add context and instructions for assignments
+
+### Content Overview
+- **Content Grid**: Visual grid layout of all content items
+- **Advanced Filtering**: Filter by status, type, priority, and more
+- **Search Functionality**: Search content by name, type, or other attributes
+- **Status Tracking**: Real-time status updates and workflow management
+- **Priority Management**: Visual priority indicators and sorting
+
+### User Management
+- **User Directory**: View all users and their roles
+- **Assignment History**: Track user assignment history and workload
+- **Performance Metrics**: View completion rates and productivity stats
+- **Role Management**: Manage user roles and permissions
+
+### Analytics Dashboard
+- **Content Statistics**: Overview of content items, assignments, and completion rates
+- **User Performance**: Individual and team performance metrics
+- **Trend Analysis**: Track content creation and completion trends
+- **Real-time Updates**: Live data updates and notifications
+
+## 📋 Prerequisites
+
+- Kontent.ai project with Management API access
+- Node.js 16+ and npm
+- Modern web browser
+- Vercel account (for deployment)
+
+## 🛠️ Installation
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/kontent-dashboard-app.git
+cd kontent-dashboard-app
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
+```env
+KONTENT_MANAGEMENT_API_KEY=your_management_api_key
+KONTENT_PROJECT_ID=your_project_id
+KONTENT_ENVIRONMENT_ID=your_environment_id
+```
+
+### 4. Development Server
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:8080`
 
 ## 🚀 Deployment
 
-This app is deployed on Vercel. If you're experiencing blank pages, try these troubleshooting steps:
+### Vercel Deployment
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
 
-### 1. Check Vercel Project Settings
-- Go to your Vercel dashboard
-- Navigate to Project Settings → General
-- Ensure the following settings:
-  - **Framework Preset**: Other
-  - **Build Command**: `npm run build`
-  - **Output Directory**: `dist`
-  - **Install Command**: `npm install`
-
-### 2. Test Static Files
-Try accessing these test pages:
-- `https://your-url.vercel.app/minimal.html` - Minimal test
-- `https://your-url.vercel.app/test.html` - Simple test
-- `https://your-url.vercel.app/static-test.html` - Comprehensive test
-
-### 3. Check Build Logs
-- Go to Vercel dashboard → Deployments
-- Click on the latest deployment
-- Check the build logs for any errors
-
-### 4. Environment Variables
-If using API keys, ensure they're set in Vercel:
-- Go to Project Settings → Environment Variables
-- Add any required environment variables
-
-## 🛠️ Local Development
-
+### Manual Build
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
 npm run build
 ```
 
-## 📁 Project Structure
+## 🔧 Configuration
 
+### Environment Variables
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `KONTENT_MANAGEMENT_API_KEY` | Your Kontent.ai Management API key | Yes |
+| `KONTENT_PROJECT_ID` | Your Kontent.ai project ID | Yes |
+| `KONTENT_ENVIRONMENT_ID` | Your Kontent.ai environment ID | Yes |
+
+### Custom App Setup in Kontent.ai
+1. Go to your Kontent.ai project settings
+2. Navigate to "Custom apps"
+3. Add a new custom app
+4. Set the app URL to your deployed application
+5. Configure permissions for Management API access
+
+## 📖 Usage
+
+### Content Assignment
+1. Navigate to the "Content Assignment" tab
+2. Select content items using checkboxes
+3. Choose a user from the dropdown
+4. Set optional due date and notes
+5. Click "Assign Selected" to create assignments
+
+### Content Overview
+1. Use the "Content Overview" tab to browse content
+2. Apply filters to narrow down results
+3. Use search to find specific content
+4. Click on content items for detailed information
+
+### User Management
+1. Access the "User Management" tab
+2. View user profiles and assignment history
+3. Monitor performance metrics
+4. Contact users or view their work
+
+### Analytics
+1. Check the "Analytics" tab for insights
+2. View content statistics and trends
+3. Monitor team performance
+4. Track completion rates
+
+## 🏗️ Architecture
+
+### Frontend
+- **React 18**: Modern React with hooks
+- **Webpack 5**: Module bundling and development server
+- **CSS Modules**: Scoped styling
+- **Lucide React**: Icon library
+
+### Backend Integration
+- **Kontent.ai Management SDK**: Content management operations
+- **Language Variants**: Multi-language content support
+- **Contributor System**: User assignment management
+- **Workflow Integration**: Status and approval workflows
+
+### File Structure
 ```
-├── public/          # Static files
-├── src/             # Source code
-│   ├── components/  # React components
-│   ├── services/    # API services
-│   └── styles/      # CSS styles
-├── dist/            # Build output
-└── vercel.json      # Vercel configuration
+src/
+├── components/          # React components
+│   ├── Dashboard.js     # Main dashboard
+│   ├── ContentAssignment.js
+│   ├── ContentOverview.js
+│   ├── UserManagement.js
+│   └── Analytics.js
+├── services/            # API services
+│   ├── kontentService.js
+│   └── sdkWrapper.js
+├── styles/              # Global styles
+│   └── global.css
+└── index.js            # App entry point
 ```
 
-## 🔧 Troubleshooting
+## 🔒 Security
 
-If pages are blank:
+- API keys are stored securely as environment variables
+- All API calls are made server-side to protect credentials
+- User permissions are respected through Kontent.ai's role system
+- HTTPS is enforced in production
 
-1. **Check browser console** for JavaScript errors
-2. **Test static files** using the test pages above
-3. **Verify Vercel settings** match the configuration
-4. **Check build logs** for any deployment errors
-5. **Try accessing files directly** to see if they exist
+## 🐛 Troubleshooting
 
-## 📝 Notes
+### Common Issues
 
-- The app uses webpack for bundling
-- Static files are copied to the dist directory during build
-- The app supports both standalone and Kontent.ai embedded modes 
+**App not loading**
+- Check environment variables are set correctly
+- Verify API key has proper permissions
+- Check browser console for errors
+
+**Assignments not saving**
+- Ensure user has contributor permissions
+- Check language variant exists
+- Verify Management API access
+
+**Content not displaying**
+- Check project ID and environment ID
+- Verify content items exist
+- Check API rate limits
+
+### Debug Tools
+The app includes built-in debug tools:
+- Language detection testing
+- API response structure validation
+- Assignment data structure testing
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Check the troubleshooting section above
+- Review Kontent.ai documentation
+- Open an issue in this repository
+- Contact the development team
+
+## 🔄 Version History
+
+### v1.0.0
+- Initial release
+- Content assignment functionality
+- User management features
+- Analytics dashboard
+- Multi-language support
+
+---
+
+**Built with ❤️ for Kontent.ai**
