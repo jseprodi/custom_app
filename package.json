@@ -8,7 +8,7 @@
     "build": "webpack --mode production",
     "start": "webpack serve --mode development",
     "vercel-build": "webpack --mode production",
-    "postbuild": "powershell -Command \"Copy-Item -Path 'public/*.html' -Destination 'dist/' -Force\""
+    "postbuild": "shx cp -f public/*.html dist/"
   },
   "keywords": [
     "kontent-ai",
@@ -37,6 +37,7 @@
     "dotenv-webpack": "^8.1.1",
     "html-webpack-plugin": "^5.5.0",
     "process": "^0.11.10",
+    "shx": "^0.3.4",
     "style-loader": "^3.3.0",
     "webpack": "^5.88.0",
     "webpack-cli": "^5.1.0",
