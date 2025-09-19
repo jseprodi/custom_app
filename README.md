@@ -189,6 +189,10 @@ For support and questions:
 - Analytics dashboard
 - Multi-language support
 
+## Demo .gif
+
+![dashboard](https://github.com/user-attachments/assets/d0ba8de0-b2c9-4ade-a761-eecce6a7d6b4)
+
 ---
 
 **Built with ❤️ for Kontent.ai**
